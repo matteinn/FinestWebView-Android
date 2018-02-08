@@ -32,6 +32,8 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.LinearInterpolator;
+import android.view.animation.RotateAnimation;
 import android.webkit.DownloadListener;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -39,6 +41,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RelativeLayout;
@@ -144,6 +147,8 @@ public class FinestWebViewActivity extends AppCompatActivity
   protected boolean backPressToClose;
   protected int stringResCopiedToClipboard;
 
+  protected int customLoadingImage;
+
   protected Boolean webViewSupportZoom;
   protected Boolean webViewMediaPlaybackRequiresUserGesture;
   protected Boolean webViewBuiltInZoomControls;
@@ -221,6 +226,10 @@ public class FinestWebViewActivity extends AppCompatActivity
   protected LinearLayout menuOpenWith;
   protected TextView menuOpenWithTv;
   protected FrameLayout webLayout;
+
+  protected ImageView loadingImageView;
+  private RotateAnimation loadingImageRotateAnimation;
+
   DownloadListener downloadListener = new DownloadListener() {
     @Override public void onDownloadStart(String url, String userAgent, String contentDisposition,
         String mimetype, long contentLength) {
@@ -373,6 +382,8 @@ public class FinestWebViewActivity extends AppCompatActivity
         builder.stringResCopiedToClipboard != null ? builder.stringResCopiedToClipboard
             : R.string.copied_to_clipboard;
 
+    customLoadingImage = builder.customLoadingImage != null ? builder.customLoadingImage : 0;
+
     webViewSupportZoom = builder.webViewSupportZoom;
     webViewMediaPlaybackRequiresUserGesture = builder.webViewMediaPlaybackRequiresUserGesture;
     webViewBuiltInZoomControls =
@@ -475,6 +486,8 @@ public class FinestWebViewActivity extends AppCompatActivity
     webLayout = (FrameLayout) findViewById(R.id.webLayout);
     webView = new WebView(this);
     webLayout.addView(webView);
+
+    loadingImageView = (ImageView) findViewById(R.id.loadingImageView);
   }
 
   protected void layoutViews() {
@@ -555,6 +568,33 @@ public class FinestWebViewActivity extends AppCompatActivity
       webLayout.setMinimumHeight((int) webLayoutMinimumHeight);
       FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT, (int)webLayoutMinimumHeight);
       webView.setLayoutParams(lp);
+    }
+
+    { // Custom loading imageview
+      if(customLoadingImage != 0) {
+        loadingImageView.setImageResource(customLoadingImage);
+        showLoader();
+      }else{
+        loadingImageView.setVisibility(View.GONE);
+      }
+    }
+  }
+
+  private void showLoader(){
+    if(customLoadingImage != 0) {
+      loadingImageView.setVisibility(View.VISIBLE);
+      loadingImageRotateAnimation = new RotateAnimation(0, 360f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+      loadingImageRotateAnimation.setInterpolator(new LinearInterpolator());
+      loadingImageRotateAnimation.setDuration(800);
+      loadingImageRotateAnimation.setRepeatCount(Animation.INFINITE);
+      loadingImageView.startAnimation(loadingImageRotateAnimation);
+    }
+  }
+
+  private void hideLoader(){
+    loadingImageView.setVisibility(View.GONE);
+    if(loadingImageRotateAnimation != null){
+      loadingImageRotateAnimation.cancel();
     }
   }
 
@@ -1176,6 +1216,8 @@ public class FinestWebViewActivity extends AppCompatActivity
 
     @Override public void onPageFinished(WebView view, String url) {
       BroadCastManager.onPageFinished(FinestWebViewActivity.this, key, url);
+
+      hideLoader();
 
       if (updateTitleFromHtml) title.setText(view.getTitle());
       urlTv.setText(UrlParser.getHost(url));

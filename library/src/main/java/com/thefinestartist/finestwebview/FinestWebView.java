@@ -157,6 +157,8 @@ public class FinestWebView {
     protected Integer webViewMixedContentMode;
     protected Boolean webViewOffscreenPreRaster;
 
+    protected Integer customLoadingImage;
+
     protected String injectJavaScript;
 
     protected String mimeType;
@@ -874,6 +876,11 @@ public class FinestWebView {
 
     public Builder webViewOffscreenPreRaster(boolean webViewOffscreenPreRaster) {
       this.webViewOffscreenPreRaster = webViewOffscreenPreRaster;
+      return this;
+    }
+
+    public Builder customLoadingImage(@DrawableRes int customLoadingImage){
+      this.customLoadingImage = customLoadingImage;
       return this;
     }
 

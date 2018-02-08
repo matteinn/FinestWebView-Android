@@ -83,6 +83,7 @@ public class MainActivity extends AppCompatActivity {
           .disableIconClose(true)
           .disableIconForward(true)
           .disableIconMenu(true)
+          .customLoadingImage(R.drawable.loader)
           .show("https://dribbble.com");
     }
   }
